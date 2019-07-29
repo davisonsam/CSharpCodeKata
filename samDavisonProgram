@@ -1,0 +1,241 @@
+/*
+ * Modified by Samuel Davison
+ * Ive added the blue star award as requested it degrades twice as fast as all other awards
+ * Its quality starts at 50 so it invariably is placed at the top when granted, but below blue distinction plus as it is a more coveted award
+ * Ive added a step process so you can see how the awards fare day to day
+ * Ive added a doctor class which contains the name of the doctor and they are assigned random awards on startup
+ * I attempted to sort and print out the doctors with their adjacent scores, but something went wrong with the syntax as scores change for no reason
+ *          I left the code in it commented out for you to take a look at anyway
+ * 
+ */
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace ProviderQuality.Console
+{
+    public class Program
+    {
+        
+        //creating an array with the names of fake doctors ill be using
+        public object [] docName = new object[10];
+
+
+        public IList<Award> Awards
+        {
+            get;
+            set;
+        }
+
+        static void Main(string[] args)
+        {
+            
+            System.Console.WriteLine("Updating award metrics...!");
+
+            var app = new Program()
+            {
+                Awards = new List<Award>
+                {
+                    new Award {Name = "Gov Quality Plus", SellIn = 10, Quality = 20},
+                    new Award {Name = "Blue First", SellIn = 2, Quality = 0},
+                    new Award {Name = "ACME Partner Facility", SellIn = 5, Quality = 7},
+                    new Award {Name = "Blue Distinction Plus", SellIn = 0, Quality = 80},
+                    new Award {Name = "Blue Compare", SellIn = 15, Quality = 20},
+                    new Award {Name = "Top Connected Providres", SellIn = 3, Quality = 6},
+                    //im guessing sellIn is meant to be experiation 
+                    new Award {Name = "Blue Star", SellIn = 20, Quality = 50}
+                }
+
+            };
+
+            System.Console.WriteLine("How many days would you like to step through?");
+            int daysStepped = System.Convert.ToInt32(System.Console.ReadLine());
+
+
+            for(int i = 0; i < daysStepped; i++)
+            {
+                System.Console.WriteLine();
+                System.Console.WriteLine("Day " + (i + 1));
+                app.UpdateQuality();
+                System.Console.WriteLine();
+            }
+            
+
+            System.Console.ReadKey();
+
+        }
+
+        public void UpdateQuality()
+        {
+            Random rnd = new Random();
+            var docList = new List<doctor>()
+            {
+                new doctor{name = "Smith", score = Awards[rnd.Next(0,6)].Quality},
+                new doctor{name = "Johnson", score = Awards[rnd.Next(0,6)].Quality},
+                new doctor{name = "Hall", score = Awards[rnd.Next(0,6)].Quality},
+                new doctor{name = "Willams", score = Awards[rnd.Next(0,6)].Quality},
+                new doctor{name = "Young", score = Awards[rnd.Next(0,6)].Quality},
+                new doctor{name = "Jones", score = Awards[rnd.Next(0,6)].Quality},
+                new doctor{name = "Hernandez", score = Awards[rnd.Next(0,6)].Quality},
+                new doctor{name = "King", score = Awards[rnd.Next(0,6)].Quality},
+                new doctor{name = "Wright", score = Awards[rnd.Next(0,6)].Quality},
+                new doctor{name = "Brown", score = Awards[rnd.Next(0,6)].Quality}
+            };
+
+            for (var i = 0; i < Awards.Count; i++)
+            {
+                //if given awards are not blue distinction plus, blue first, or blue compare then they degrade
+                if (Awards[i].Name != "Blue First" && Awards[i].Name != "Blue Compare")
+                {
+                    if (Awards[i].Quality > 0)
+                    {
+                        if (Awards[i].Name != "Blue Distinction Plus")
+                        {
+                            //degrades blue star quality twice as fast
+                            if(Awards[i].Name == "Blue Star")
+                            {
+                                Awards[i].Quality = Awards[i].Quality - 1;
+                                
+                            }
+                            Awards[i].Quality = Awards[i].Quality - 1;
+                        }
+                    }
+                }
+                else
+                {
+                    //if blue first or blue compare are not at 50 yet then the quality increases
+                    if (Awards[i].Quality < 50)
+                    {
+                        Awards[i].Quality = Awards[i].Quality + 1;
+
+                        if (Awards[i].Name == "Blue Compare")
+                        {
+                            if (Awards[i].SellIn < 11)
+                            {
+                                if (Awards[i].Quality < 50)
+                                {
+                                    Awards[i].Quality = Awards[i].Quality + 1;
+                                }
+                            }
+
+                            //can we not just get rid of one of these two if loops?
+                            if (Awards[i].SellIn < 6)
+                            {
+                                if (Awards[i].Quality < 50)
+                                {
+                                    Awards[i].Quality = Awards[i].Quality + 1;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //degrades all experation by 1 except for blue distinction plus
+                if (Awards[i].Name != "Blue Distinction Plus")
+                {
+                    Awards[i].SellIn = Awards[i].SellIn - 1;
+                }
+
+                //if experation date isnt now
+                if (Awards[i].SellIn < 0)
+                {
+                    //and its not blue first
+                    if (Awards[i].Name != "Blue First")
+                    {
+                        //or blue compare
+                        if (Awards[i].Name != "Blue Compare")
+                        {
+                            //and the score isnt 0
+                            if (Awards[i].Quality > 0)
+                            {
+                                //and its not distinction plus, lose 1 score
+                                if (Awards[i].Name != "Blue Distinction Plus")
+                                {
+                                    Awards[i].Quality = Awards[i].Quality - 1;
+                                }
+                            }
+                        }
+                        //if expired, set score to 0
+                        else
+                        {
+                            Awards[i].Quality = Awards[i].Quality - Awards[i].Quality;
+                        }
+                    }
+                    //blue compare and first gain score if not at 50 already
+                    else
+                    {
+                        if (Awards[i].Quality < 50)
+                        {
+                            Awards[i].Quality = Awards[i].Quality + 1;
+                        }
+                    }
+                }
+
+                //sets blue star to 0 if it overflows to negative numbers
+                if (Awards[i].Name == "Blue Star" && Awards[i].Quality < 0)
+                {
+                    Awards[i].Quality = 0;
+                }
+
+
+                //sorts by highest 
+                Award temp = new Award { Name = "Temp", SellIn = 0, Quality = 0 };
+                for (int h = 1; h < Awards.Count + 1; h++)
+                {
+                    for (int j = 0; j < Awards.Count - h; j++)
+                    {
+                        if (Awards[j].Quality < Awards[j + 1].Quality)
+                        {
+                            temp = Awards[j + 1];
+                            Awards[j + 1] = Awards[j];
+                            Awards[j] = temp;
+                        }
+                    }
+
+
+                }
+
+                /*is suppossed to sort by highest doctor but for some reason the numbers jump around even though its using
+                 * the same algorythm as the one used by the award sorter
+                doctor temp1 = new doctor { name = "Temp", score = 0 };
+                for (int h = 1; h < docList.Count; h++)
+                {
+                    for(int j = 0; j < docList.Count - h - 1; j++)
+                    {
+                        if(docList[j].score < docList[j + 1].score)
+                        {
+                            temp1 = docList[j + 1];
+                            docList[j + 1] = docList[j];
+                            docList[j] = temp1;
+                        }
+                    }
+
+                    
+                }
+                */
+                
+
+
+            }
+            //print out all the rewards and their worth
+            for(int i = 0; i < Awards.Count;i++)
+            {
+                System.Console.WriteLine(Awards[i].Name + " " + Awards[i].Quality);
+            }
+                
+        }
+
+    }
+
+    //doctor class
+    class doctor
+    {
+        public string name { get; set; }
+        public int score { get; set; }
+        public override string ToString()
+        {
+            return this.name + " " + this.score;
+        }
+    }
+}
